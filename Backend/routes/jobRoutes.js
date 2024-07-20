@@ -2,18 +2,22 @@ const express = require("express");
 
 const jobRouter = express.Router();
 
-const { createJob ,updateJob,getJobDdetails } =require('../controller/jobController')
+const { createJob ,updateJob,getJobDetails ,applyJobs,jobsApplied} =require('../controller/jobController')
 
 //importing middleware
 const authUser = require('../middleware/authmiddleware')
-jobRouter.use(authUser);
 
-jobRouter.get("/", () => {});
+jobRouter.post("/createJob",authUser('Employer'),createJob);
 
-jobRouter.post("/createJob", createJob);
+jobRouter.patch("/updateJob/:id",authUser('Employer'),updateJob);
 
-jobRouter.patch("/updateJob/:id",updateJob);
+jobRouter.get('/getJobs',authUser('Employee'),getJobDetails);
+jobRouter.get('/getJobsEmp',authUser('Employer'),getJobDetails);
 
-jobRouter.get('/getJobDdetails',getJobDdetails)
+jobRouter.post('/applyJobs',authUser('Employee'),applyJobs)
+
+jobRouter.get('/jobsApplied',authUser('Employee'),jobsApplied)
+
+
 
 module.exports = jobRouter;

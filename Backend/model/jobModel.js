@@ -12,10 +12,12 @@ const jobSchema = mongoose.Schema({
     required: true,
     Maxlength: [50],
   },
-  // companyId: {
-  //   Type: number,
-  //   Required: true,
-  // },
+  jobStatus: {
+    type: String,
+    enum : ["Applied" , "Not Applied" ,"Approved" ,"Rejected"],
+    required: true,
+    default: "Not Applied"
+  },
   jobTechnologies: {
     type: String,
     required: true,
@@ -24,7 +26,7 @@ const jobSchema = mongoose.Schema({
   jobExperienceRequired: {
     type: String,
     required: true,
-    enum: ["0 - 2", "3 - 5", "6 - 8", "10"],
+    enum: ["0 - 2", "3 - 5", "6 - 8", "> 10"],
   },
   jobLocation: {
     type: String,
@@ -44,13 +46,14 @@ const jobSchema = mongoose.Schema({
     type: Number,
     required: true,
   },
-  duplicateJobID: {
+  jobID: {
     type: String,
     default:null
   },
-  user_id:{
+  emp_id:{
     type:String,
-    required:true
+    required:true,
+    default:null
   }
 });
 
