@@ -128,15 +128,10 @@ const applyJobs = async (req, res) => {
 
 const jobsApplied = async (req, res) => {
   const emp_id = req.user._id;
-  const { jobID } = req.body;
-  const { _id, jobStatus } = await jobModel
-    .findOne({ jobID: jobID })
-    .select("jobStatus");
+    console.log(await jobModel.find({ jobStatus: "Applied" }))
   if (!emp_id) {
     throw Error("Authorization token required");
-  } else if (jobStatus != "Applied") {
-    throw Error("No jobs are applied");
-  }
+  } 
   try {
     const response = await jobModel.find({ jobStatus: "Applied" });
     res.status(200).json(response);
