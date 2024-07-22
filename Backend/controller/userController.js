@@ -30,7 +30,18 @@ const loginuser = async (req, res) => {
   }
 };
 
+const updateUser = async(req,res) =>{
+  const emp_id = req.user._id;
+  try{
+    // const /
+
+  }catch(err){
+    res.status(400).json({Error:err.message})
+  }
+}
+
 module.exports = {
   createUser,
   loginuser,
+  updateUser
 };

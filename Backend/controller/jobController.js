@@ -1,10 +1,12 @@
 const jobModel = require("../model/jobModel");
 require("../db/dbConnection");
-const User = require("../model/userModel");
+// const User = require("../model/userModel");
+const { v4: uuidv4 } = require('uuid');
 
 const createJob = async (req, res) => {
   const emp_id = req.user._id;
   const role = req.user.role;
+  const job_Id = uuidv4();
   if (!emp_id) {
     throw Error("Authorization token required");
   }
@@ -33,10 +35,9 @@ const createJob = async (req, res) => {
       jobGraduate,
       language,
       jobNoticePeriod,
-      jobID,
+      jobID:job_Id,
       emp_id,
     });
-    newData.jobID = newData._id;
     const response = await newData.save();
     res.status(201).json(response);
   } catch (err) {
@@ -71,23 +72,27 @@ const updateJob = async (req, res) => {
 };
 
 const getJobDetails = async (req, res) => {
-  const emp_id = req.user._id;
-  const role = req.user.role;
-  if (!emp_id) {
-    throw Error("Authorization token required");
-  }
-  if (!role) {
-    throw Error("Enter valid role");
-  }
-  if (role == "Employee") {
     try {
       const response = await jobModel.find();
       res.status(200).json(response);
     } catch (err) {
       res.status(500).json({ Error: err.message });
     }
+};
+
+const getEmpJobDetails = async (req,res)=>{
+  const emp_id = req.user._id;
+  const role = req.user.role;
+
+  if (!emp_id) {
+    throw Error("Authorization token required");
   }
+  if (!role) {
+    throw Error("Enter valid role");
+  }
+
   if (role == "Employer") {
+
     try {
       const response = await jobModel.find({ emp_id: emp_id });
       res.status(200).json(response);
@@ -95,7 +100,7 @@ const getJobDetails = async (req, res) => {
       res.status(500).json({ Error: err.message });
     }
   }
-};
+}
 
 const applyJobs = async (req, res) => {
   const emp_id = req.user._id;
@@ -113,8 +118,8 @@ const applyJobs = async (req, res) => {
   }
 
   try {
-    const response = await jobModel.findByIdAndUpdate(
-      jobID,
+    const response = await jobModel.findOneAndUpdate(
+      {jobID:jobID},
       { jobStatus: "Applied" },
       {
         new: true,
@@ -128,13 +133,20 @@ const applyJobs = async (req, res) => {
 
 const jobsApplied = async (req, res) => {
   const emp_id = req.user._id;
-    console.log(await jobModel.find({ jobStatus: "Applied" }))
+  const role = req.user.role;
   if (!emp_id) {
     throw Error("Authorization token required");
   } 
   try {
-    const response = await jobModel.find({ jobStatus: "Applied" });
+    if(role == 'Employee'){ 
+    const response = await jobModel.find({ jobStatus: "Applied" ,emp_id: emp_id});
     res.status(200).json(response);
+  }
+  if(role == 'Employer'){
+    const response = await jobModel.find({ jobStatus: "Applied" ,emp_id: emp_id})
+    res.status(200).json(response);
+  }
+   
   } catch (err) {
     res.status(500).json({ Error: err.msg });
   }
@@ -146,4 +158,5 @@ module.exports = {
   getJobDetails,
   applyJobs,
   jobsApplied,
+  getEmpJobDetails
 };
