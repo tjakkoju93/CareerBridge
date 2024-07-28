@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
+const userValidation = require("../validations/userValidation");
 
 const employeeSchema = new mongoose.Schema({
   firstName: {
@@ -27,35 +28,37 @@ const employeeSchema = new mongoose.Schema({
   currentCompany: {
     type: String,
     maxlength: [50, "Name cannot be more than 50 characters"],
-    required: true,
   },
   role: {
     type: String,
-    enum: ["Employee", "Employer"],
+    enum: ["EMPLOYEE", "EMPLOYER","ADMIN"],
     required: true,
   },
-  companyType:{
+  companyType: {
     type: String,
-    required: true,
   },
   currentTechnologies: {
     type: String,
+    default: null,
   },
   currentExperience: {
     type: String,
+    default: null,
   },
   address: {
     type: String,
-    required:true
+    required: true,
   },
   language: {
     type: String,
-    enum: ["Telugu", "Hindi", "English"],
+    enum: ["TELUGU", "HINDI", "ENGLISH"],
+    default: null,
   },
   noticePeriod: {
     type: Number,
+    default: 0,
   },
-});
+},{timestamps:true});
 
 employeeSchema.statics.userSignup = async (userDetails) => {
   const {
@@ -88,7 +91,7 @@ employeeSchema.statics.userSignup = async (userDetails) => {
     lastName,
     email,
     mobile,
-    password : hash,
+    password: hash,
     currentCompany,
     role,
     companyType,

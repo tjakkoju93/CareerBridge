@@ -1,7 +1,6 @@
 const mongoose = require("mongoose");
 
 const jobSchema = mongoose.Schema({
-
   jobcompanyName: {
     type: String,
     required: true,
@@ -14,14 +13,14 @@ const jobSchema = mongoose.Schema({
   },
   jobStatus: {
     type: String,
-    enum : ["Applied" , "Not Applied" ,"Approved" ,"Rejected"],
+    enum: ["APPLIED", "NOT APPLIED", "APPROVED", "REJECTED"],
     required: true,
-    default: "Not Applied"
+    default: "NOT APPLIED",
   },
   jobTechnologies: {
     type: String,
     required: true,
-    enum: ["Java", "JavaScript", "Python", "ReactJs", "AngularJS", "FullStack"],
+    enum: ["JAVA", "JAVASCRIPT", "PYTHON", "REACTJS", "ANGULARJS", "FULLSTACK"],
   },
   jobExperienceRequired: {
     type: String,
@@ -30,7 +29,7 @@ const jobSchema = mongoose.Schema({
   },
   jobLocation: {
     type: String,
-    enum: ["Hyderabad", "Pune", "Banglore", "Mumbai", "Delhi", "Chennai"],
+    enum: ["HYDERABAD", "PUNE", "BANGLORE", "MUMBAI", "DELHI", "CHENNAI"],
     required: true,
   },
   jobGraduate: {
@@ -40,7 +39,7 @@ const jobSchema = mongoose.Schema({
   language: {
     type: String,
     required: true,
-    default: "English",
+    default: "ENGLISH",
   },
   jobNoticePeriod: {
     type: Number,
@@ -48,14 +47,21 @@ const jobSchema = mongoose.Schema({
   },
   jobID: {
     type: String,
-    default:null
+    default: null,
   },
-  emp_id:{
-    type:String,
-    required:true,
-    default:null
-  }
-});
+  employerID:{
+    type: String,
+  },
+  employeeID:[
+    {
+      type: new mongoose.Schema({
+        employeeID: String,
+      }),
+      default: [],
+    }
+  ],
+
+},{timestamps:true});
 
 const jobModel = new mongoose.model("jobModel", jobSchema);
 

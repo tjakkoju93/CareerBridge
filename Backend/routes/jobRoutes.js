@@ -2,22 +2,41 @@ const express = require("express");
 
 const jobRouter = express.Router();
 
-const { createJob ,updateJob,getJobDetails ,applyJobs,jobsApplied,getEmpJobDetails} =require('../controller/jobController')
+const {
+  createJob,
+  updateJob,
+  getJobDetails,
+  applyJobs,
+  jobsApplied,
+  getEmpJobDetails,
+  deleteJob,
+} = require("../controller/jobController");
 
 //importing middleware
-const authUser = require('../middleware/authmiddleware')
+const authUser = require("../middleware/authmiddleware");
 
-jobRouter.post("/createJob",authUser('Employer'),createJob);
+//API  for Employer to create a job
+jobRouter.post("/create_Job", authUser("EMPLOYER"), createJob);
 
-jobRouter.patch("/updateJob/:id",authUser('Employer'),updateJob);
+//API  for Employer to update an existing job
+jobRouter.patch("/update_Job/:id", authUser("EMPLOYER"), updateJob);
 
-jobRouter.get('/getJobs',getJobDetails);
-jobRouter.get('/getJobsEmp',authUser('Employer'),getEmpJobDetails);
+//APT for an employee to view all the jobs posted
+jobRouter.get("/getJobs_Emp", getJobDetails);
 
-jobRouter.post('/applyJobs',authUser('Employee'),applyJobs)
+//APT for an employee to view the jobs posted by them
+jobRouter.get("/getJobs_Emplyr", authUser("EMPLOYER"), getEmpJobDetails);
 
-jobRouter.get('/jobsApplied',authUser('Employee'),jobsApplied)
-jobRouter.get('/jobsApplied/emp',authUser('Employer'),jobsApplied)
+//APT for an employee to view apply the jobs posted
+jobRouter.post("/apply_Jobs/:jobID", authUser("EMPLOYEE"), applyJobs);
 
+//API for viewing jobs applied by employee
+jobRouter.get("/jobsApplied_emp", authUser("EMPLOYEE"), jobsApplied);
+
+//API for viewing jobs posted by respective employer with status applied
+jobRouter.get("/jobsApplied_emplyr", authUser("EMPLOYER"), jobsApplied);
+
+//API to delete job
+jobRouter.delete("/delete_Job/:jobID", authUser("EMPLOYER"), deleteJob);
 
 module.exports = jobRouter;

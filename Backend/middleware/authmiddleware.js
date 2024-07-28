@@ -15,6 +15,7 @@ const authUser = (expectedRole) => {
     }
     try {
       const { _id, role } = await jwt.verify(token, process.env.JWT_SECRET);
+      
       const user = await User.findOne({ _id, role }).select("_id role");
 
       if (!user) {
@@ -23,10 +24,12 @@ const authUser = (expectedRole) => {
           .json({ error: "User not found or role mismatch" });
       }
       if (expectedRole && role !== expectedRole) {
-        return res.status(403).json({ error: "Access denied: Insufficient role" });
+        return res
+          .status(403)
+          .json({ error: "Access denied: Insufficient role" });
       }
       req.user = user;
-         next();
+      next();
     } catch (err) {
       return res.status(401).json({ Error: err.message });
     }

@@ -1,16 +1,15 @@
 const jobModel = require("../model/jobModel");
 require("../db/dbConnection");
-// const User = require("../model/userModel");
-const { v4: uuidv4 } = require('uuid');
+const { v4: uuidv4 } = require("uuid");
 
 const createJob = async (req, res) => {
   const emp_id = req.user._id;
   const role = req.user.role;
   const job_Id = uuidv4();
-  if (!emp_id) {
+  if (!emp_id || !role) {
     throw Error("Authorization token required");
   }
-  if (role == "Employee") {
+  if (role == "EMPLOYEE") {
     throw Error("Only employers can create the job");
   }
   try {
@@ -24,6 +23,7 @@ const createJob = async (req, res) => {
       language,
       jobNoticePeriod,
       jobID,
+      employerID,
     } = req.body;
 
     const newData = new jobModel({
@@ -35,8 +35,8 @@ const createJob = async (req, res) => {
       jobGraduate,
       language,
       jobNoticePeriod,
-      jobID:job_Id,
-      emp_id,
+      jobID: job_Id,
+      employerID: emp_id,
     });
     const response = await newData.save();
     res.status(201).json(response);
@@ -48,10 +48,10 @@ const createJob = async (req, res) => {
 const updateJob = async (req, res) => {
   const emp_id = req.user._id;
   const role = req.user.role;
-  if (!emp_id) {
+  if (!emp_id || !role) {
     throw Error("Authorization token required");
   }
-  if (role == "Employee") {
+  if (role == "EMPLOYEE") {
     throw Error("Only employers can create the job");
   }
 
@@ -72,55 +72,61 @@ const updateJob = async (req, res) => {
 };
 
 const getJobDetails = async (req, res) => {
-    try {
-      const response = await jobModel.find();
-      res.status(200).json(response);
-    } catch (err) {
-      res.status(500).json({ Error: err.message });
-    }
+  try {
+    const response = await jobModel.find();
+    res.status(200).json(response);
+  } catch (err) {
+    res.status(500).json({ Error: err.message });
+  }
 };
 
-const getEmpJobDetails = async (req,res)=>{
+const getEmpJobDetails = async (req, res) => {
   const emp_id = req.user._id;
   const role = req.user.role;
 
-  if (!emp_id) {
+  if (!emp_id || !role) {
     throw Error("Authorization token required");
   }
-  if (!role) {
-    throw Error("Enter valid role");
-  }
-
-  if (role == "Employer") {
-
+  if (role == "EMPLOYER") {
     try {
-      const response = await jobModel.find({ emp_id: emp_id });
+      const response = await jobModel.find({ employerID: emp_id });
       res.status(200).json(response);
     } catch (err) {
       res.status(500).json({ Error: err.message });
     }
   }
-}
+};
 
 const applyJobs = async (req, res) => {
   const emp_id = req.user._id;
   const role = req.user.role;
-  const { jobID } = req.body;
-  const data = await jobModel.findOne({ jobID: jobID }).select("jobStatus");
-  if (!emp_id) {
+  const { jobID } = req.params;
+  const data = await jobModel.findOne({ jobID: jobID });
+
+  if (!emp_id || !role) {
     throw Error("Authorization token required");
-  } else if (role == "Employer") {
+  } else if (role == "EMPLOYER") {
     throw Error("Employer cannot apply for job");
   } else if (!jobID) {
     throw Error("Select a valid job");
   } else if (data.jobStatus == "Applied") {
-    throw Error("You have already applied for job");
+    if (data.employeeID && data.employeeID.length > 0) {
+      for (i = 0; i < data.employeeID.length; i++) {
+        if (data.employeeID[i].employeeID == emp_id) {
+          console.log(data.employeeID[i].employeeID)
+          res.status(401).json("User already applied for job");
+        }
+      }
+    }
   }
 
   try {
     const response = await jobModel.findOneAndUpdate(
-      {jobID:jobID},
-      { jobStatus: "Applied" },
+      { jobID: jobID },
+      {
+        jobStatus: "Applied",
+        $push: { employeeID: { employeeID: emp_id } },
+      },
       {
         new: true,
       }
@@ -134,21 +140,62 @@ const applyJobs = async (req, res) => {
 const jobsApplied = async (req, res) => {
   const emp_id = req.user._id;
   const role = req.user.role;
-  if (!emp_id) {
+  if (!emp_id || !role) {
     throw Error("Authorization token required");
-  } 
+  }
+
   try {
-    if(role == 'Employee'){ 
-    const response = await jobModel.find({ jobStatus: "Applied" ,emp_id: emp_id});
-    res.status(200).json(response);
-  }
-  if(role == 'Employer'){
-    const response = await jobModel.find({ jobStatus: "Applied" ,emp_id: emp_id})
-    res.status(200).json(response);
-  }
-   
+    if (role == "EMPLOYEE") {
+      const data = await jobModel.findOne({"employeeID.employeeID":emp_id});
+      if (data.employeeID && data.employeeID.length > 0) {
+        for (i = 0; i < data.employeeID.length; i++) {
+          if (data.employeeID[i].employeeID == emp_id) {
+            const response = await jobModel.find({
+              jobStatus: "Applied",
+            });
+            const empID = data.employeeID[i].employeeID;
+            res.status(200).json([...response, { employeeID: empID }]);
+          }
+        }
+      }
+    }
+    if (role == "EMPLOYER") {
+      const response = await jobModel.find({
+        jobStatus: "Applied",
+        employerID: emp_id,
+      });
+      res.status(200).json(response);
+    }
   } catch (err) {
     res.status(500).json({ Error: err.msg });
+  }
+};
+
+const deleteJob = async (req, res) => {
+  const role = req.user.role;
+  const id = req.user._id;
+  const jobID = req.params.jobID;
+  console.log(role, id, jobID);
+
+  if (!id || !role) {
+    throw Error("Authorization token required");
+  }
+  if (!id) {
+    throw Error("Authorization token required");
+  } else if (role == "EMPLOYEE") {
+    throw Error("Employee cannot delete a job");
+  } else if (!jobID) {
+    throw Error("Enter a valid job id");
+  }
+  try {
+    const data = await jobModel.findOne({ jobID: jobID });
+    if (id != data.employerID || jobID != data.jobID) {
+      throw Error("User doesnt have permission to delete the job");
+    }
+    const response = await jobModel.findOneAndDelete({ jobID: jobID });
+    res.status(200).json(response);
+  } catch (err) {
+    res.status(400).json({ Error: err.message });
   }
 };
 
@@ -158,5 +205,6 @@ module.exports = {
   getJobDetails,
   applyJobs,
   jobsApplied,
-  getEmpJobDetails
+  getEmpJobDetails,
+  deleteJob,
 };
