@@ -2,63 +2,73 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const userValidation = require("../validations/userValidation");
 
-const employeeSchema = new mongoose.Schema({
-  firstName: {
-    type: String,
-    required: true,
-    maxlength: [30, "Name cannot be more than 30 characters"],
+const employeeSchema = new mongoose.Schema(
+  {
+    firstName: {
+      type: String,
+      required: true,
+      maxlength: [30, "Name cannot be more than 30 characters"],
+    },
+    lastName: {
+      type: String,
+      required: true,
+      maxlength: [30, "Name cannot be more than 30 characters"],
+    },
+    email: {
+      type: String,
+      required: true,
+    },
+    mobile: {
+      type: Number,
+      required: true,
+    },
+    password: {
+      type: String,
+      required: true,
+    },
+    currentCompany: {
+      type: String,
+      maxlength: [50, "Name cannot be more than 50 characters"],
+    },
+    role: {
+      type: String,
+      enum: ["EMPLOYEE", "EMPLOYER", "ADMIN"],
+      required: true,
+    },
+    companyType: {
+      type: String,
+    },
+    currentTechnologies: {
+      type: String,
+      default: null,
+    },
+    currentExperience: {
+      type: String,
+      default: null,
+    },
+    address: {
+      type: String,
+      required: true,
+    },
+    language: {
+      type: String,
+      enum: ["TELUGU", "HINDI", "ENGLISH"],
+      default: null,
+    },
+    noticePeriod: {
+      type: Number,
+      default: 0,
+    },
+    otp: {
+      type: Number,
+    },
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
   },
-  lastName: {
-    type: String,
-    required: true,
-    maxlength: [30, "Name cannot be more than 30 characters"],
-  },
-  email: {
-    type: String,
-    required: true,
-  },
-  mobile: {
-    type: Number,
-    required: true,
-  },
-  password: {
-    type: String,
-    required: true,
-  },
-  currentCompany: {
-    type: String,
-    maxlength: [50, "Name cannot be more than 50 characters"],
-  },
-  role: {
-    type: String,
-    enum: ["EMPLOYEE", "EMPLOYER","ADMIN"],
-    required: true,
-  },
-  companyType: {
-    type: String,
-  },
-  currentTechnologies: {
-    type: String,
-    default: null,
-  },
-  currentExperience: {
-    type: String,
-    default: null,
-  },
-  address: {
-    type: String,
-    required: true,
-  },
-  language: {
-    type: String,
-    enum: ["TELUGU", "HINDI", "ENGLISH"],
-    default: null,
-  },
-  noticePeriod: {
-    type: Number,
-    default: 0,
-  },
-},{timestamps:true});
+  { timestamps: true }
+);
 
 employeeSchema.statics.userSignup = async (userDetails) => {
   const {

@@ -18,11 +18,12 @@ require('./model/jobModel')
 //required routes
 const jobRouter = require("./routes/jobRoutes.js")
 const userRoutes = require("./routes/userRoutes.js")
-
+// const otpRouter = require("./routes/otpRoutes.js")
 
 //routes
-app.use("/api/v1/jobs",jobRouter)
-app.use("/api/v1/users",userRoutes)
+app.use("/api/v1/jobs",jobRouter);
+app.use("/api/v1/users",userRoutes);
+// app.use("api/v1/otps",otpRouter);
 
 
 

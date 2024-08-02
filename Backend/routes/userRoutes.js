@@ -1,6 +1,7 @@
 const express = require("express");
-
 const userRouter = express.Router();
+
+//---------------------------- Imports ---------------------------------
 
 const {
   createUser,
@@ -10,35 +11,42 @@ const {
   deleteUser,
   getEmpByID,
 } = require("../controller/userController");
-
 const authUser = require("../middleware/authmiddleware");
-
 const { rules, userValidation } = require("../validations/userValidation");
+const { verifyOtp } = require("../controller/otpGenController");
+const {
+  emailVerification,
+  passwordReset,
+} = require("../controller/passwordController");
 
-//Login and signup for both Employee and Employer
+// ------------------------ User Login and Signup ------------------------
+
 userRouter.post("/create_Emp", rules, userValidation, createUser);
-
 userRouter.post("/login_Emp", loginuser);
 
-//get Employee details
+//---------------------------------- Employee Routes ----------------------
+
 userRouter.get("/get_Emp", authUser("EMPLOYEE"), getUser);
-
-//get Employer details
-userRouter.get("/get_Emplyr", authUser("EMPLOYER"), getUser);
-
-//get Employee by ID
 userRouter.get("/get_Emp/:id", authUser("EMPLOYEE"), getEmpByID);
-
-// get Employer by ID
-userRouter.get("/get_Emplyr/:id", authUser("EMPLOYER"), getEmpByID);
-
-//update Employee details
 userRouter.patch("/update_Emp", authUser("EMPLOYEE"), updateUser);
+userRouter.patch("/verifyUser_Emp", authUser("EMPLOYEE"), verifyOtp);
+userRouter.patch("/passwordReset_Emp", authUser("EMPLOYEE"), passwordReset);
 
-//update Employer details
+//---------------------------------- Employee Routes ----------------------
+
+userRouter.get("/get_Emplyr", authUser("EMPLOYER"), getUser);
+userRouter.get("/get_Emplyr/:id", authUser("EMPLOYER"), getEmpByID);
 userRouter.patch("/update_Emplyr", authUser("EMPLOYER"), updateUser);
+userRouter.patch("/verifyUser_Emplyr", authUser("EMPLOYER"), verifyOtp);
+userRouter.patch("/passwordReset_Emplyr", authUser("EMPLOYER"), passwordReset);
 
-//delete user by ID
+//---------------------------------- Delete User ----------------------------
+
 userRouter.delete("/delete_User/:id", deleteUser);
+
+//---------------------------------- Password Reset ----------------------------
+
+userRouter.patch("/emailVerification", emailVerification);
+
 
 module.exports = userRouter;
